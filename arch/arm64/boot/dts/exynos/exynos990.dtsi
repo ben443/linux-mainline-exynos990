@@ -6,6 +6,7 @@
  */
 
 #include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/clock/exynos990.h>
 
 / {
 	compatible = "samsung,exynos990";
@@ -230,6 +231,78 @@
 		pinctrl_cmgp: pinctrl@15c30000 {
 			compatible = "samsung,exynos990-pinctrl";
 			reg = <0x15c30000 0x1000>;
+		};
+
+		/* WORKING TREE - 31 Oct. 2024 - ibelwon */
+
+		/* clk */
+		cmu_top: clock-controller@1a330000 {
+			compatible = "samsung,exynos990-cmu-top";
+			reg = <0x1a330000 0x8000>;
+			#clock-cells = <1>;
+
+			clocks = <&oscclk>;
+			clock-names = "oscclk";
+		};
+
+		cmu_hsi: clock-controller@10a00000 {
+			compatible = "samsung,exynos990-cmu-hsi0";
+			reg = <0x10a00000 0x8000>;
+			#clock-cells = <1>;
+
+			clocks = <&oscclk>, <&cmu_top CLK_DOUT_HSI0_BUS>,
+					 <&cmu_top CLK_DOUT_HSI0_USB31DRD>,
+					 <&cmu_top CLK_DOUT_HSI0_USBDP_DEBUG>,
+					 <&cmu_top CLK_DOUT_HSI0_DPGTC>;
+			clock-names = "oscclk", "dout_hsi0_bus",
+						  "dout_hsi0_usb31drd",
+						  "dout_hsi0_usbdp_debug",
+						  "dout_hsi0_dpgtc";
+		};
+
+		/* usb sysreg (hsi0) */
+		pmu_system_controller: system-controller@11860000 {
+			compatible = "samsung,exynos850-pmu", "syscon";
+			reg = <0x15860000 0x10000>;
+		};
+
+		/* NO. */
+		oscusb: oscillator@0 {
+        	compatible = "fixed-clock";
+        	#clock-cells = <1>;
+        	clock-frequency  = <66666666>;
+        	clock-output-names = "ref";
+    	};
+
+		/* usb PAIN */
+		usbdrd: usb@10e00000 {
+			compatible = "samsung,exynos850-dwusb3";
+			ranges = <0x0 0x10e00000 0x10000>;
+			clocks = <&oscusb 0>,
+				 <&cmu_hsi CLK_GOUT_USB31DRD_IPCLKPORT_I_USBDPPHY_REF_SOC_PLL>;
+			clock-names = "bus_early", "ref";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			status = "okay";
+
+			usbdrd_dwc3: usb@0 {
+				compatible = "snps,dwc3";
+				reg = <0x0 0x10000>;
+				interrupts = <GIC_SPI 310 IRQ_TYPE_LEVEL_HIGH>;
+				phys = <&usbdrd_phy 0>;
+				phy-names = "usb2-phy";
+			};
+		};
+
+		usbdrd_phy: phy@135d0000 {
+			compatible = "samsung,exynos850-usbdrd-phy";
+			reg = <0x10c00000 0x50000>;
+			clocks = <&cmu_hsi CLK_GOUT_USB31DRD_IPCLKPORT_ACLK_PHYCTRL>,
+				 <&cmu_hsi CLK_GOUT_USB31DRD_IPCLKPORT_I_USBDPPHY_REF_SOC_PLL>;
+			clock-names = "phy", "ref";
+			samsung,pmu-syscon = <&pmu_system_controller>;
+			#phy-cells = <1>;
+			status = "okay";
 		};
 	};
 

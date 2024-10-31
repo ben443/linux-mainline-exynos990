@@ -441,7 +441,8 @@ static unsigned long samsung_pll0822x_recalc_rate(struct clk_hw *hw,
 	u64 fvco = parent_rate;
 
 	pll_con3 = readl_relaxed(pll->con_reg);
-	if (pll->type != pll_1418x)
+	if (pll->type != pll_1418x || pll->type != pll_0717x ||
+				      pll->type != pll_0718x)
 		mdiv = (pll_con3 >> PLL0822X_MDIV_SHIFT) & PLL0822X_MDIV_MASK;
 	else
 		mdiv = (pll_con3 >> PLL0822X_MDIV_SHIFT) & PLL1418X_MDIV_MASK;
@@ -449,7 +450,7 @@ static unsigned long samsung_pll0822x_recalc_rate(struct clk_hw *hw,
 	sdiv = (pll_con3 >> PLL0822X_SDIV_SHIFT) & PLL0822X_SDIV_MASK;
 
 	fvco *= mdiv;
-	if (pll->type == pll_0516x)
+	if (pll->type == pll_0516x || pll->type == pll_0716x)
 		fvco *= 2;
 
 	do_div(fvco, (pdiv << sdiv));
@@ -518,8 +519,8 @@ static const struct clk_ops samsung_pll0822x_clk_min_ops = {
 /* Maximum lock time can be 500 * PDIV cycles */
 #define PLL0831X_LOCK_FACTOR		(500)
 
-#define PLL0831X_KDIV_MASK		(0xFFFF)
-#define PLL0831X_MDIV_MASK		(0x1FF)
+#define PLL0831X_KDIV_MASK		(0)
+#define PLL0831X_MDIV_MASK		(0x3FF)
 #define PLL0831X_PDIV_MASK		(0x3F)
 #define PLL0831X_SDIV_MASK		(0x7)
 #define PLL0831X_MDIV_SHIFT		(16)
@@ -1313,6 +1314,7 @@ static const struct clk_ops samsung_pll531x_clk_ops = {
 	.recalc_rate = samsung_pll531x_recalc_rate,
 };
 
+
 static void __init _samsung_clk_register_pll(struct samsung_clk_provider *ctx,
 				const struct samsung_pll_clock *pll_clk)
 {
@@ -1370,13 +1372,15 @@ static void __init _samsung_clk_register_pll(struct samsung_clk_provider *ctx,
 		break;
 	case pll_1417x:
 	case pll_1418x:
-	case pll_1051x:
-	case pll_1052x:
 	case pll_0818x:
 	case pll_0822x:
 	case pll_0516x:
 	case pll_0517x:
 	case pll_0518x:
+	case pll_0716x:
+	case pll_0717x:
+	case pll_0718x:
+	case pll_0732x:
 		pll->enable_offs = PLL0822X_ENABLE_SHIFT;
 		pll->lock_offs = PLL0822X_LOCK_STAT_SHIFT;
 		if (!pll->rate_table)

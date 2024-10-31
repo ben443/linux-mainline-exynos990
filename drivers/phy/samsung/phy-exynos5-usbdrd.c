@@ -1085,6 +1085,8 @@ static void exynos850_usbdrd_utmi_init(struct exynos5_usbdrd_phy *phy_drd)
 	reg = readl(regs_base + EXYNOS850_DRD_LINKPORT);
 	ss_ports = FIELD_GET(LINKPORT_HOST_NUM_U3, reg);
 
+	ss_ports = 1;
+
 	/* Start PHY Reset (POR=high) */
 	reg = readl(regs_base + EXYNOS850_DRD_CLKRST);
 	if (ss_ports) {
@@ -1362,11 +1364,7 @@ static int exynos5_usbdrd_phy_clk_handle(struct exynos5_usbdrd_phy *phy_drd)
 				     "failed to find phy reference clock\n");
 
 	ref_rate = clk_get_rate(ref_clk);
-	ret = exynos5_rate_to_clk(ref_rate, &phy_drd->extrefclk);
-	if (ret)
-		return dev_err_probe(phy_drd->dev, ret,
-				     "clock rate (%ld) not supported\n",
-				     ref_rate);
+	phy_drd->extrefclk = EXYNOS5_FSEL_26MHZ;
 
 	return 0;
 }
@@ -1394,6 +1392,119 @@ static const struct exynos5_usbdrd_phy_config phy_cfg_exynos850[] = {
 	},
 };
 
+static void exynos990_usbdrd_utmi_init(struct exynos5_usbdrd_phy *phy_drd)
+{
+	void __iomem *regs_base = phy_drd->reg_phy;
+	u32 reg;
+	u32 ss_ports;
+
+	/*
+	 * Disable HWACG (hardware auto clock gating control). This will force
+	 * QACTIVE signal in Q-Channel interface to HIGH level, to make sure
+	 * the PHY clock is not gated by the hardware.
+	 */
+	reg = readl(regs_base + EXYNOS850_DRD_LINKCTRL);
+	reg |= LINKCTRL_FORCE_QACT;
+	writel(reg, regs_base + EXYNOS850_DRD_LINKCTRL);
+	pr_alert("igor-usb: USB HWACG disabled\n");
+
+	/* Start PHY Reset (HIGH, to pull PHY up) */
+	reg = readl(regs_base + EXYNOS850_DRD_CLKRST);
+	pr_alert("igor-usb: PHY reset at %x\n", reg);
+	/* dehardcode */
+	reg |= 0x2000;
+	reg |= 0x1000;
+	/* maybe phy won't start without phy30 reset? idk. start it anyway.*/
+	reg |= 0x4;
+	reg |= 0x8;
+	writel(reg, regs_base + EXYNOS850_DRD_CLKRST);
+
+	/* cool, phy is now ready to go, time to push cfgdata */
+	pr_alert("igor-usb: PHY reset done, pushing cfg data!\n");
+
+
+	/* Enable UTMI+ */
+	reg = readl(regs_base + EXYNOS850_DRD_UTMI);
+	reg &= ~(UTMI_FORCE_SUSPEND | UTMI_FORCE_SLEEP | UTMI_DP_PULLDOWN |
+		 UTMI_DM_PULLDOWN);
+	writel(reg, regs_base + EXYNOS850_DRD_UTMI);
+
+	/* Set PHY clock and control HS PHY */
+	reg = readl(regs_base + EXYNOS850_DRD_HSP);
+	reg |= HSP_EN_UTMISUSPEND | HSP_COMMONONN;
+	writel(reg, regs_base + EXYNOS850_DRD_HSP);
+
+	/* Set VBUS Valid and D+ pull-up control by VBUS pad usage */
+	reg = readl(regs_base + EXYNOS850_DRD_LINKCTRL);
+	reg |= LINKCTRL_BUS_FILTER_BYPASS(0xf);
+	writel(reg, regs_base + EXYNOS850_DRD_LINKCTRL);
+
+	reg = readl(regs_base + EXYNOS850_DRD_UTMI);
+	reg |= UTMI_FORCE_BVALID | UTMI_FORCE_VBUSVALID;
+	writel(reg, regs_base + EXYNOS850_DRD_UTMI);
+
+	reg = readl(regs_base + EXYNOS850_DRD_HSP);
+	reg |= HSP_VBUSVLDEXT | HSP_VBUSVLDEXTSEL;
+	writel(reg, regs_base + EXYNOS850_DRD_HSP);
+
+	reg = readl(regs_base + EXYNOS850_DRD_SSPPLLCTL);
+	reg &= ~SSPPLLCTL_FSEL;
+	switch (phy_drd->extrefclk) {
+	case EXYNOS5_FSEL_50MHZ:
+		reg |= FIELD_PREP(SSPPLLCTL_FSEL, 7);
+		break;
+	case EXYNOS5_FSEL_26MHZ:
+		reg |= FIELD_PREP(SSPPLLCTL_FSEL, 6);
+		break;
+	case EXYNOS5_FSEL_24MHZ:
+		reg |= FIELD_PREP(SSPPLLCTL_FSEL, 2);
+		break;
+	case EXYNOS5_FSEL_20MHZ:
+		reg |= FIELD_PREP(SSPPLLCTL_FSEL, 1);
+		break;
+	case EXYNOS5_FSEL_19MHZ2:
+		reg |= FIELD_PREP(SSPPLLCTL_FSEL, 0);
+		break;
+	default:
+		dev_warn(phy_drd->dev, "unsupported ref clk: %#.2x\n",
+			 phy_drd->extrefclk);
+		break;
+	}
+	writel(reg, regs_base + EXYNOS850_DRD_SSPPLLCTL);
+
+	if (phy_drd->drv_data->phy_tunes)
+		exynos5_usbdrd_apply_phy_tunes(phy_drd,
+					       PTS_UTMI_POSTINIT);
+
+	/* Power up PHY analog blocks */
+	reg = readl(regs_base + EXYNOS850_DRD_HSP_TEST);
+	reg &= ~HSP_TEST_SIDDQ;
+	writel(reg, regs_base + EXYNOS850_DRD_HSP_TEST);
+
+	pr_alert("igor-usb: cfg data sent out, switching PHY from POR to normal mode\n");
+
+	/* Finish PHY reset (POR=low) */
+	fsleep(10); /* required before doing POR=low */
+	reg = readl(regs_base + EXYNOS850_DRD_CLKRST);
+	reg &= ~(CLKRST_PHY_SW_RST | CLKRST_PORT_RST);
+	writel(reg, regs_base + EXYNOS850_DRD_CLKRST);
+	fsleep(75); /* required after POR=low for guaranteed PHY clock */
+
+	/* Disable single ended signal out */
+	reg = readl(regs_base + EXYNOS850_DRD_HSP);
+	reg &= ~HSP_FSV_OUT_EN;
+	writel(reg, regs_base + EXYNOS850_DRD_HSP);
+	pr_alert("igor-usb: all done? that easy?\n");
+}
+
+static const struct exynos5_usbdrd_phy_config phy_cfg_exynos990[] = {
+	{
+		.id		= EXYNOS5_DRDPHY_UTMI,
+		.phy_isol	= exynos5_usbdrd_phy_isol,
+		.phy_init	= exynos990_usbdrd_utmi_init,
+	},
+};
+
 static const char * const exynos5_clk_names[] = {
 	"phy",
 };
@@ -1408,6 +1519,22 @@ static const char * const exynos5433_core_clk_names[] = {
 
 static const char * const exynos5_regulator_names[] = {
 	"vbus", "vbus-boost",
+};
+
+static const struct exynos5_usbdrd_phy_tuning e990_tunes_utmi_postinit[] = {
+	PHY_TUNING_ENTRY_PHY(EXYNOS850_DRD_HSPPARACON,
+			     (HSPPARACON_TXVREF |
+			      HSPPARACON_TXPREEMPAMP | HSPPARACON_SQRX |
+			      HSPPARACON_COMPDIS),
+			     (FIELD_PREP_CONST(HSPPARACON_TXVREF, 7) |
+			      FIELD_PREP_CONST(HSPPARACON_TXPREEMPAMP, 3) |
+			      FIELD_PREP_CONST(HSPPARACON_SQRX, 5) |
+			      FIELD_PREP_CONST(HSPPARACON_COMPDIS, 7))),
+	PHY_TUNING_ENTRY_LAST
+};
+
+static const struct exynos5_usbdrd_phy_tuning *e990_tunes[PTS_MAX] = {
+	[PTS_UTMI_POSTINIT] = e990_tunes_utmi_postinit,
 };
 
 static const struct exynos5_usbdrd_phy_drvdata exynos5420_usbdrd_phy = {
@@ -1463,7 +1590,22 @@ static const struct exynos5_usbdrd_phy_drvdata exynos7_usbdrd_phy = {
 static const struct exynos5_usbdrd_phy_drvdata exynos850_usbdrd_phy = {
 	.phy_cfg		= phy_cfg_exynos850,
 	.phy_ops		= &exynos850_usbdrd_phy_ops,
-	.pmu_offset_usbdrd0_phy	= EXYNOS5_USBDRD_PHY_CONTROL,
+	.pmu_offset_usbdrd0_phy	= 0x72c,
+	.phy_tunes			= e990_tunes,
+	.clk_names		= exynos5_clk_names,
+	.n_clks			= ARRAY_SIZE(exynos5_clk_names),
+	.core_clk_names		= exynos5_core_clk_names,
+	.n_core_clks		= ARRAY_SIZE(exynos5_core_clk_names),
+	.regulator_names	= exynos5_regulator_names,
+	.n_regulators		= ARRAY_SIZE(exynos5_regulator_names),
+};
+
+static const struct exynos5_usbdrd_phy_drvdata exynos990_usbdrd_phy = {
+	.phy_cfg		= phy_cfg_exynos990,
+	.phy_ops		= &exynos850_usbdrd_phy_ops,
+	.phy_tunes			= e990_tunes,
+	.pmu_offset_usbdrd0_phy	= EXYNOS990_PHY_CTRL_USB20,
+	.pmu_offset_usbdrd0_phy_ss = EXYNOS5_USBDRD_PHY_CONTROL,
 	.clk_names		= exynos5_clk_names,
 	.n_clks			= ARRAY_SIZE(exynos5_clk_names),
 	.core_clk_names		= exynos5_core_clk_names,
@@ -1666,6 +1808,10 @@ static const struct of_device_id exynos5_usbdrd_phy_of_match[] = {
 	}, {
 		.compatible = "samsung,exynos850-usbdrd-phy",
 		.data = &exynos850_usbdrd_phy
+	},
+	{
+		.compatible = "samsung,exynos990-usbdrd-phy",
+		.data = &exynos990_usbdrd_phy
 	},
 	{ },
 };
