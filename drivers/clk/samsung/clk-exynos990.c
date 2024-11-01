@@ -89,8 +89,6 @@
 #define CLK_CON_MUX_MUX_CLKCMU_SSP_BUS 0x10e0
 #define CLK_CON_MUX_MUX_CLKCMU_TNR_BUS 0x10e4
 #define CLK_CON_MUX_MUX_CLKCMU_VRA_BUS 0x10e8
-#define CLK_CON_MUX_MUX_CLK_CMU_CMUREF 0x10f0
-#define CLK_CON_MUX_MUX_CMU_CMUREF 0x10f4
 #define CLK_CON_DIV_CLKCMU_APM_BUS 0x1800
 #define CLK_CON_DIV_CLKCMU_AUD_CPU 0x1804
 #define CLK_CON_DIV_CLKCMU_BUS0_BUS 0x1808
@@ -150,7 +148,6 @@
 #define CLK_CON_DIV_CLKCMU_VRA_BUS 0x18e0
 #define CLK_CON_DIV_DIV_CLKCMU_DPU 0x18e8
 #define CLK_CON_DIV_DIV_CLKCMU_DPU_ALT 0x18ec
-#define CLK_CON_DIV_DIV_CLK_CMU_CMUREF 0x18f0
 #define CLK_CON_DIV_PLL_SHARED0_DIV2 0x18f4
 #define CLK_CON_DIV_PLL_SHARED0_DIV3 0x18f8
 #define CLK_CON_DIV_PLL_SHARED0_DIV4 0x18fc
@@ -294,8 +291,7 @@ static const unsigned long top_clk_regs[] __initconst = {
 	CLK_CON_MUX_MUX_CLKCMU_SSP_BUS,
 	CLK_CON_MUX_MUX_CLKCMU_TNR_BUS,
 	CLK_CON_MUX_MUX_CLKCMU_VRA_BUS,
-	CLK_CON_MUX_MUX_CLK_CMU_CMUREF,
-	CLK_CON_MUX_MUX_CMU_CMUREF,
+
 	CLK_CON_DIV_CLKCMU_APM_BUS,
 	CLK_CON_DIV_CLKCMU_AUD_CPU,
 	CLK_CON_DIV_CLKCMU_BUS0_BUS,
@@ -355,7 +351,6 @@ static const unsigned long top_clk_regs[] __initconst = {
 	CLK_CON_DIV_CLKCMU_VRA_BUS,
 	CLK_CON_DIV_DIV_CLKCMU_DPU,
 	CLK_CON_DIV_DIV_CLKCMU_DPU_ALT,
-	CLK_CON_DIV_DIV_CLK_CMU_CMUREF,
 	CLK_CON_DIV_PLL_SHARED0_DIV2,
 	CLK_CON_DIV_PLL_SHARED0_DIV3,
 	CLK_CON_DIV_PLL_SHARED0_DIV4,
@@ -426,129 +421,6 @@ static const unsigned long top_clk_regs[] __initconst = {
 	CLK_CON_GAT_GATE_CLKCMU_VRA_BUS,
 };
 
-/* Parents definition for top (shared) muxes*/
-PNAME(mout_clkcmu_apm_bus_p) = { "fout_shared0_pll", "fout_shared2_pll" };
-PNAME(mout_clkcmu_aud_cpu_p) = { "fout_shared0_pll", "fout_shared2_pll",
-				 "fout_shared4_pll", "fout_shared0_pll" };
-PNAME(mout_clkcmu_bus0_bus_p) = { "fout_shared0_pll", "fout_shared1_pll",
-				  "fout_shared2_pll", "oscclk" };
-PNAME(mout_clkcmu_bus1_bus_p) = { "fout_shared0_pll", "fout_shared1_pll",
-				  "fout_shared2_pll", "oscclk" };
-PNAME(mout_clkcmu_bus1_sss_p) = { "fout_shared0_pll", "fout_shared1_pll",
-				  "fout_shared2_pll", "oscclk" };
-PNAME(mout_clkcmu_cis_clk0_p) = { "oscclk", "fout_shared2_pll" };
-PNAME(mout_clkcmu_cis_clk1_p) = { "oscclk", "fout_shared2_pll" };
-PNAME(mout_clkcmu_cis_clk2_p) = { "oscclk", "fout_shared2_pll" };
-PNAME(mout_clkcmu_cis_clk3_p) = { "oscclk", "fout_shared2_pll" };
-PNAME(mout_clkcmu_cis_clk4_p) = { "oscclk", "fout_shared2_pll" };
-PNAME(mout_clkcmu_cis_clk5_p) = { "oscclk", "fout_shared2_pll" };
-PNAME(mout_clkcmu_cmu_boost_p) = { "fout_shared0_pll", "fout_shared1_pll",
-				   "fout_shared2_pll", "oscclk" };
-PNAME(mout_clkcmu_core_bus_p) = { "fout_shared0_pll", "fout_shared1_pll",
-				  "fout_shared2_pll", "fout_shared0_pll",
-				  "fout_shared1_pll", "fout_shared0_pll",
-				  "fout_shared3_pll", "oscclk" };
-PNAME(mout_clkcmu_cpucl0_dbg_bus_p) = { "fout_shared2_pll", "fout_shared0_pll",
-					"fout_shared0_pll", "oscclk" };
-PNAME(mout_clkcmu_cpucl0_switch_p) = { "fout_shared4_pll", "fout_shared0_pll",
-				       "fout_shared2_pll", "fout_shared0_pll" };
-PNAME(mout_clkcmu_cpucl1_switch_p) = { "fout_shared4_pll", "fout_shared0_pll",
-				       "fout_shared2_pll", "fout_shared0_pll" };
-PNAME(mout_clkcmu_cpucl2_busp_p) = { "fout_shared0_pll", "fout_shared2_pll" };
-PNAME(mout_clkcmu_cpucl2_switch_p) = { "fout_shared4_pll", "fout_shared0_pll",
-				       "fout_shared2_pll", "fout_shared0_pll" };
-PNAME(mout_clkcmu_csis_bus_p) = { "fout_shared0_pll", "fout_shared4_pll",
-				  "fout_shared0_pll", "fout_shared4_pll" };
-PNAME(mout_clkcmu_csis_ois_mcu_p) = { "fout_shared0_pll", "fout_shared2_pll" };
-PNAME(mout_clkcmu_dnc_bus_p) = { "fout_shared1_pll", "fout_shared2_pll",
-				 "fout_shared4_pll", "fout_shared0_pll" };
-PNAME(mout_clkcmu_dnc_busm_p) = { "fout_shared0_pll", "fout_shared1_pll",
-				  "fout_shared2_pll", "fout_shared4_pll" };
-PNAME(mout_clkcmu_dns_bus_p) = { "fout_shared0_pll", "fout_shared4_pll",
-				 "fout_shared0_pll", "fout_shared1_pll",
-				 "fout_shared4_pll", "fout_shared2_pll",
-				 "oscclk",	     "oscclk" };
-PNAME(mout_clkcmu_dpu_p) = { "fout_shared0_pll", "fout_shared0_pll" };
-PNAME(mout_clkcmu_dpu_alt_p) = { "fout_shared4_pll", "fout_shared4_pll",
-				 "fout_shared2_pll", "oscclk" };
-PNAME(mout_clkcmu_dsp_bus_p) = { "fout_shared0_pll", "fout_shared1_pll",
-				 "fout_shared2_pll", "fout_shared4_pll",
-				 "fout_shared3_pll", "oscclk",
-				 "oscclk",	     "oscclk" };
-PNAME(mout_clkcmu_g2d_g2d_p) = { "fout_shared0_pll", "fout_shared4_pll",
-				 "fout_shared0_pll", "fout_shared2_pll" };
-PNAME(mout_clkcmu_g2d_mscl_p) = { "fout_shared0_pll", "fout_shared2_pll",
-				  "fout_shared4_pll", "oscclk" };
-PNAME(mout_clkcmu_hpm_p) = { "oscclk", "dout_shared0_div4", "dout_shared2_div2",
-			     "oscclk" };
-PNAME(mout_clkcmu_hsi0_bus_p) = { "dout_shared0_div4", "dout_shared2_div2" };
-PNAME(mout_clkcmu_hsi0_dpgtc_p) = { "oscclk", "dout_shared0_div4",
-				    "dout_shared2_div2", "oscclk" };
-PNAME(mout_clkcmu_hsi0_usb31drd_p) = { "oscclk", "dout_shared0_div4",
-				       "dout_shared2_div2", "oscclk" };
-PNAME(mout_clkcmu_hsi0_usbdp_debug_p) = { "oscclk", "fout_shared2_pll" };
-PNAME(mout_clkcmu_hsi1_bus_p) = { "dout_shared0_div3", "dout_shared0_div4",
-				  "dout_shared1_div4", "dout_shared4_div2",
-				  "dout_shared2_div2", "fout_mmc_pll",
-				  "oscclk",	      "oscclk" };
-PNAME(mout_clkcmu_hsi1_mmc_card_p) = { "oscclk", "fout_shared2_pll",
-				       "fout_mmc_pll", "fout_shared0_pll" };
-PNAME(mout_clkcmu_hsi1_pcie_p) = { "oscclk", "fout_shared2_pll" };
-PNAME(mout_clkcmu_hsi1_ufs_card_p) = { "oscclk", "fout_shared0_pll",
-				       "fout_shared2_pll", "oscclk" };
-PNAME(mout_clkcmu_hsi1_ufs_embd_p) = { "oscclk", "dout_shared0_div4",
-				       "dout_shared2_div2", "oscclk" };
-PNAME(mout_clkcmu_hsi2_bus_p) = { "fout_shared0_pll", "fout_shared2_pll" };
-PNAME(mout_clkcmu_hsi2_pcie_p) = { "oscclk", "fout_shared2_pll" };
-PNAME(mout_clkcmu_ipp_bus_p) = { "fout_shared0_pll", "fout_shared4_pll",
-				 "fout_shared0_pll", "fout_shared1_pll",
-				 "fout_shared4_pll", "oscclk",
-				 "oscclk",	     "oscclk" };
-PNAME(mout_clkcmu_itp_bus_p) = { "fout_shared0_pll", "fout_shared4_pll",
-				 "fout_shared0_pll", "fout_shared1_pll",
-				 "fout_shared4_pll", "fout_shared2_pll",
-				 "oscclk",	     "oscclk" };
-PNAME(mout_clkcmu_mcsc_bus_p) = { "fout_shared0_pll", "fout_shared4_pll",
-				  "fout_shared0_pll", "fout_shared1_pll",
-				  "fout_shared4_pll", "fout_shared2_pll",
-				  "oscclk",	      "oscclk" };
-PNAME(mout_clkcmu_mcsc_gdc_p) = { "fout_shared0_pll", "fout_shared4_pll",
-				  "fout_shared0_pll", "fout_shared1_pll",
-				  "fout_shared4_pll", "fout_shared2_pll",
-				  "oscclk",	      "oscclk" };
-PNAME(mout_clkcmu_cmu_boost_cpu_p) = { "fout_shared0_pll", "fout_shared1_pll",
-				       "fout_shared2_pll", "oscclk" };
-PNAME(mout_clkcmu_mfc0_mfc0_p) = { "fout_shared4_pll", "fout_shared0_pll",
-				   "fout_shared4_pll", "fout_shared2_pll" };
-PNAME(mout_clkcmu_mfc0_wfd_p) = { "fout_shared4_pll", "fout_shared0_pll",
-				  "fout_shared4_pll", "fout_shared2_pll" };
-PNAME(mout_clkcmu_mif_busp_p) = { "fout_shared0_pll", "fout_shared1_pll",
-				  "fout_shared2_pll", "oscclk" };
-PNAME(mout_clkcmu_mif_switch_p) = { "fout_shared0_pll", "fout_shared1_pll",
-				    "fout_shared0_pll", "fout_shared1_pll",
-				    "fout_shared2_pll", "fout_shared0_pll",
-				    "fout_shared2_pll", "oscclk" };
-PNAME(mout_clkcmu_npu_bus_p) = { "fout_shared0_pll", "fout_shared1_pll",
-				 "fout_shared2_pll", "fout_shared4_pll",
-				 "fout_shared3_pll", "oscclk",
-				 "oscclk",	     "oscclk" };
-PNAME(mout_clkcmu_peric0_bus_p) = { "fout_shared0_pll", "fout_shared2_pll" };
-PNAME(mout_clkcmu_peric0_ip_p) = { "fout_shared0_pll", "fout_shared2_pll" };
-PNAME(mout_clkcmu_peric1_bus_p) = { "fout_shared0_pll", "fout_shared2_pll" };
-PNAME(mout_clkcmu_peric1_ip_p) = { "fout_shared0_pll", "fout_shared2_pll" };
-PNAME(mout_clkcmu_peris_bus_p) = { "fout_shared0_pll", "fout_shared2_pll" };
-PNAME(mout_clkcmu_ssp_bus_p) = { "fout_shared4_pll", "fout_shared0_pll",
-				 "fout_shared4_pll", "fout_shared2_pll" };
-PNAME(mout_clkcmu_tnr_bus_p) = { "fout_shared0_pll", "fout_shared4_pll",
-				 "fout_shared0_pll", "fout_shared1_pll",
-				 "fout_shared4_pll", "fout_shared2_pll",
-				 "oscclk",	     "oscclk" };
-PNAME(mout_clkcmu_vra_bus_p) = { "fout_shared0_pll", "fout_shared4_pll",
-				 "fout_shared0_pll", "fout_shared4_pll" };
-PNAME(mout_clk_cmu_cmuref_p) = { "fout_shared0_pll", "fout_shared1_pll",
-				 "fout_shared2_pll", "oscclk" };
-PNAME(mout_cmu_cmuref_p) = { "oscclk", "dout_clk_cmu_cmuref" };
-
 static const struct samsung_pll_clock top_pll_clks[] __initconst = {
 	PLL(pll_0717x, CLK_FOUT_SHARED0_PLL, "fout_shared0_pll", "oscclk",
 	    PLL_LOCKTIME_PLL_SHARED0, PLL_CON3_PLL_SHARED0, NULL),
@@ -561,8 +433,130 @@ static const struct samsung_pll_clock top_pll_clks[] __initconst = {
 	PLL(pll_0717x, CLK_FOUT_SHARED4_PLL, "fout_shared4_pll", "oscclk",
 	    PLL_LOCKTIME_PLL_SHARED4, PLL_CON3_PLL_SHARED4, NULL),
 	PLL(pll_0732x, CLK_FOUT_MMC_PLL, "fout_mmc_pll", "oscclk",
-	    PLL_LOCKTIME_PLL_MMC, PLL_CON3_PLL_MMC, NULL),
+		PLL_LOCKTIME_PLL_MMC, PLL_CON3_PLL_MMC, NULL),
+	PLL(pll_0718x, CLK_FOUT_G3D_PLL, "fout_g3d_pll", "oscclk",
+		PLL_LOCKTIME_PLL_G3D, PLL_CON3_PLL_G3D, NULL),
 };
+
+/* Parents list for top (shared) muxes*/
+PNAME(mout_clkcmu_apm_bus_p) = { "dout_shared0_div2", "dout_shared2_div2" };
+PNAME(mout_clkcmu_aud_cpu_p) = { "dout_shared0_div2", "fout_shared2_pll",
+				 "dout_shared4_div2", "dout_shared0_div4" };
+PNAME(mout_clkcmu_bus0_bus_p) = { "dout_shared0_div4", "dout_shared1_div4",
+				  "dout_shared2_div2", "oscclk" };
+PNAME(mout_clkcmu_bus1_bus_p) = { "dout_shared0_div4", "dout_shared1_div4",
+				  "dout_shared2_div2", "oscclk" };
+PNAME(mout_clkcmu_bus1_sss_p) = { "dout_shared0_div4", "dout_shared1_div4",
+				  "dout_shared2_div2", "oscclk" };
+PNAME(mout_clkcmu_cis_clk0_p) = { "oscclk", "dout_shared2_div2" };
+PNAME(mout_clkcmu_cis_clk1_p) = { "oscclk", "dout_shared2_div2" };
+PNAME(mout_clkcmu_cis_clk2_p) = { "oscclk", "dout_shared2_div2" };
+PNAME(mout_clkcmu_cis_clk3_p) = { "oscclk", "dout_shared2_div2" };
+PNAME(mout_clkcmu_cis_clk4_p) = { "oscclk", "dout_shared2_div2" };
+PNAME(mout_clkcmu_cis_clk5_p) = { "oscclk", "dout_shared2_div2" };
+PNAME(mout_clkcmu_cmu_boost_p) = { "dout_shared0_div4", "dout_shared1_div4",
+				   "dout_shared2_div2", "oscclk" };
+PNAME(mout_clkcmu_core_bus_p) = { "dout_shared0_div2", "dout_shared1_div2",
+				  "fout_shared2_pll", "dout_shared0_div3",
+				  "dout_shared1_div3", "dout_shared0_div4",
+				  "fout_shared3_pll", "oscclk" };
+PNAME(mout_clkcmu_cpucl0_dbg_bus_p) = { "fout_shared2_pll", "dout_shared0_div3",
+					"dout_shared0_div4", "oscclk" };
+PNAME(mout_clkcmu_cpucl0_switch_p) = { "fout_shared4_pll", "dout_shared0_div2",
+				       "fout_shared2_pll", "dout_shared0_div4" };
+PNAME(mout_clkcmu_cpucl1_switch_p) = { "fout_shared4_pll", "dout_shared0_div2",
+				       "fout_shared2_pll", "dout_shared0_div4" };
+PNAME(mout_clkcmu_cpucl2_busp_p) = { "dout_shared0_div4", "dout_shared2_div2" };
+PNAME(mout_clkcmu_cpucl2_switch_p) = { "fout_shared4_pll", "dout_shared0_div2",
+				       "fout_shared2_pll", "dout_shared0_div4" };
+PNAME(mout_clkcmu_csis_bus_p) = { "dout_shared0_div3", "dout_shared4_div2",
+				  "dout_shared0_div4", "dout_shared4_div3" };
+PNAME(mout_clkcmu_csis_ois_mcu_p) = { "dout_shared0_div4", "dout_shared2_div2" };
+PNAME(mout_clkcmu_dnc_bus_p) = { "dout_shared1_div2", "fout_shared2_pll",
+				 "dout_shared4_div2", "dout_shared0_div4" };
+PNAME(mout_clkcmu_dnc_busm_p) = { "dout_shared0_div4", "dout_shared1_div4",
+				  "dout_shared2_div2", "dout_shared4_div4" };
+PNAME(mout_clkcmu_dns_bus_p) = { "dout_shared0_div3", "dout_shared4_div2",
+				 "dout_shared0_div4", "dout_shared1_div4",
+				 "dout_shared4_div3", "dout_shared2_div2",
+				 "oscclk", "oscclk" };
+PNAME(mout_clkcmu_dpu_p) = { "dout_shared0_div3", "dout_shared0_div4" };
+PNAME(mout_clkcmu_dpu_alt_p) = { "dout_shared4_div2", "dout_shared4_div3",
+				 "dout_shared2_div2", "oscclk" };
+PNAME(mout_clkcmu_dsp_bus_p) = { "dout_shared0_div2", "dout_shared1_div2",
+				 "fout_shared2_pll", "dout_shared4_div2",
+				 "fout_shared3_pll", "oscclk",
+				 "oscclk",	     "oscclk" };
+PNAME(mout_clkcmu_g2d_g2d_p) = { "dout_shared0_div3", "dout_shared4_div2",
+				 "dout_shared0_div4", "dout_shared2_div2" };
+PNAME(mout_clkcmu_g2d_mscl_p) = { "dout_shared0_div4", "dout_shared2_div2",
+				  "dout_shared4_div4", "oscclk" };
+PNAME(mout_clkcmu_hpm_p) = { "oscclk", "dout_shared0_div4", "dout_shared2_div2",
+			     "oscclk" };
+PNAME(mout_clkcmu_hsi0_bus_p) = { "dout_shared0_div4", "dout_shared2_div2" };
+PNAME(mout_clkcmu_hsi0_dpgtc_p) = { "oscclk", "dout_shared0_div4",
+				    "dout_shared2_div2", "oscclk" };
+PNAME(mout_clkcmu_hsi0_usb31drd_p) = { "oscclk", "dout_shared0_div4",
+				       "dout_shared2_div2", "oscclk" };
+PNAME(mout_clkcmu_hsi0_usbdp_debug_p) = { "oscclk", "fout_shared2_pll" };
+PNAME(mout_clkcmu_hsi1_bus_p) = { "dout_shared0_div3", "dout_shared0_div4",
+				  "dout_shared1_div4", "dout_shared4_div3",
+				  "dout_shared2_div2", "fout_mmc_pll",
+				  "oscclk",	      "oscclk" };
+PNAME(mout_clkcmu_hsi1_mmc_card_p) = { "oscclk", "fout_shared2_pll",
+				       "fout_mmc_pll", "dout_shared0_div4" };
+PNAME(mout_clkcmu_hsi1_pcie_p) = { "oscclk", "fout_shared2_pll" };
+PNAME(mout_clkcmu_hsi1_ufs_card_p) = { "oscclk", "dout_shared0_div4",
+				       "dout_shared2_div2", "oscclk" };
+PNAME(mout_clkcmu_hsi1_ufs_embd_p) = { "oscclk", "dout_shared0_div4",
+				       "dout_shared2_div2", "oscclk" };
+PNAME(mout_clkcmu_hsi2_bus_p) = { "dout_shared0_div3", "dout_shared2_div2" };
+PNAME(mout_clkcmu_hsi2_pcie_p) = { "oscclk", "fout_shared2_pll" };
+PNAME(mout_clkcmu_ipp_bus_p) = { "dout_shared0_div3", "dout_shared4_div2",
+				 "dout_shared0_div4", "dout_shared1_div4",
+				 "dout_shared4_div3", "oscclk",
+				 "oscclk",	     "oscclk" };
+PNAME(mout_clkcmu_itp_bus_p) = { "dout_shared0_div3", "dout_shared4_div2",
+				  "dout_shared0_div4", "dout_shared1_div4",
+				  "dout_shared4_div3", "dout_shared2_div2",
+				  "oscclk",	      "oscclk" };
+PNAME(mout_clkcmu_mcsc_bus_p) = { "dout_shared0_div3", "dout_shared4_div2",
+				  "dout_shared0_div4", "dout_shared1_div4",
+				  "dout_shared4_div3", "dout_shared2_div2",
+				  "oscclk",	      "oscclk" };
+PNAME(mout_clkcmu_mcsc_gdc_p) = { "dout_shared0_div3", "dout_shared4_div2",
+				  "dout_shared0_div4", "dout_shared1_div4",
+				  "dout_shared4_div3", "dout_shared2_div2",
+				  "oscclk",	      "oscclk" };
+PNAME(mout_clkcmu_cmu_boost_cpu_p) = { "dout_shared0_div4", "dout_shared1_div4",
+				       "dout_shared2_div2", "oscclk" };
+PNAME(mout_clkcmu_mfc0_mfc0_p) = { "dout_shared4_div2", "dout_shared0_div4",
+				  "dout_shared4_div3", "dout_shared2_div2" };
+PNAME(mout_clkcmu_mfc0_wfd_p) = { "dout_shared4_div2", "dout_shared0_div4",
+				  "dout_shared4_div3", "dout_shared2_div2" };
+PNAME(mout_clkcmu_mif_busp_p) = { "dout_shared0_div4", "dout_shared1_div4",
+				  "dout_shared2_div2", "oscclk" };
+PNAME(mout_clkcmu_mif_switch_p) = { "fout_shared0_pll", "fout_shared1_pll",
+				    "dout_shared0_div2", "dout_shared1_div2",
+				    "fout_shared2_pll", "dout_shared0_div4",
+				    "dout_shared2_div2", "oscclk" };
+PNAME(mout_clkcmu_npu_bus_p) = { "dout_shared0_div2", "dout_shared1_div2",
+				 "fout_shared2_pll", "dout_shared4_div2",
+				 "fout_shared3_pll", "oscclk",
+				 "oscclk",	     "oscclk" };
+PNAME(mout_clkcmu_peric0_bus_p) = { "dout_shared0_div4", "dout_shared2_div2" };
+PNAME(mout_clkcmu_peric0_ip_p) = { "dout_shared0_div4", "dout_shared2_div2" };
+PNAME(mout_clkcmu_peric1_bus_p) = { "dout_shared0_div4", "dout_shared2_div2" };
+PNAME(mout_clkcmu_peric1_ip_p) = { "dout_shared0_div4", "dout_shared2_div2" };
+PNAME(mout_clkcmu_peris_bus_p) = { "dout_shared0_div4", "dout_shared2_div2" };
+PNAME(mout_clkcmu_ssp_bus_p) = { "dout_shared4_div2", "dout_shared0_div4",
+				 "dout_shared4_div3", "dout_shared2_div2" };
+PNAME(mout_clkcmu_tnr_bus_p) = { "dout_shared0_div3", "dout_shared4_div2",
+				 "dout_shared0_div4", "dout_shared1_div4",
+				 "dout_shared4_div3", "dout_shared2_div2",
+				 "oscclk",	     "oscclk" };
+PNAME(mout_clkcmu_vra_bus_p) = { "dout_shared0_div3", "dout_shared4_div2",
+				 "dout_shared0_div4", "dout_shared4_div3" };
 
 static const struct samsung_mux_clock top_mux_clks[] __initconst = {
 	MUX(CLK_MOUT_CLKCMU_APM_BUS, "mout_clkcmu_apm_bus",
@@ -693,10 +687,6 @@ static const struct samsung_mux_clock top_mux_clks[] __initconst = {
 	    mout_clkcmu_tnr_bus_p, CLK_CON_MUX_MUX_CLKCMU_TNR_BUS, 0, 3),
 	MUX(CLK_MOUT_CLKCMU_VRA_BUS, "mout_clkcmu_vra_bus",
 	    mout_clkcmu_vra_bus_p, CLK_CON_MUX_MUX_CLKCMU_VRA_BUS, 0, 2),
-	MUX(CLK_MOUT_CLK_CMU_CMUREF, "mout_clk_cmu_cmuref",
-	    mout_clk_cmu_cmuref_p, CLK_CON_MUX_MUX_CLK_CMU_CMUREF, 0, 2),
-	MUX(CLK_MOUT_CMU_CMUREF, "mout_cmu_cmuref", mout_cmu_cmuref_p,
-	    CLK_CON_MUX_MUX_CMU_CMUREF, 0, 1),
 };
 
 static const struct samsung_div_clock top_div_clks[] __initconst = {
@@ -730,7 +720,7 @@ static const struct samsung_div_clock top_div_clks[] __initconst = {
 
 	/* APM_BUS */
 	DIV(CLK_DOUT_APM_BUS, "dout_apm_bus", "gout_clkcmu_apm_bus",
-	    CLK_CON_DIV_CLKCMU_APM_BUS, 0, 2),
+	    CLK_CON_DIV_CLKCMU_APM_BUS, 0, 3),
 
 	/* AUD_CPU */
 	DIV(CLK_DOUT_AUD_CPU, "dout_aud_cpu", "gout_clkcmu_aud_cpu",
@@ -771,7 +761,7 @@ static const struct samsung_div_clock top_div_clks[] __initconst = {
 	/* CPUCL0 */
 	DIV(CLK_DOUT_CPUCL0_DBG, "dout_cpucl0_debug",
 	    "gout_clkcmu_cpucl0_dbg_bus", CLK_CON_DIV_CLKCMU_CPUCL0_DBG_BUS, 0,
-	    4),
+	    3),
 	DIV(CLK_DOUT_CPUCL0_SWITCH, "dout_cpucl0_switch",
 	    "gout_clkcmu_cpucl0_switch", CLK_CON_DIV_CLKCMU_CPUCL0_SWITCH, 0,
 	    3),
@@ -965,7 +955,7 @@ static const struct samsung_gate_clock top_gate_clks[] __initconst = {
 	     CLK_CON_GAT_GATE_CLKCMU_HPM, 21, CLK_IGNORE_UNUSED, 0),
 	GATE(CLK_GOUT_CLKCMU_HSI0_BUS, "gout_clkcmu_hsi0_bus",
 	     "mout_clkcmu_hsi0_bus", CLK_CON_GAT_GATE_CLKCMU_HSI0_BUS, 21,
-	     CLK_IGNORE_UNUSED, 0),
+	     0, 0),
 	GATE(CLK_GOUT_CLKCMU_HSI0_DPGTC, "gout_clkcmu_hsi0_dpgtc",
 	     "mout_clkcmu_hsi0_dpgtc", CLK_CON_GAT_GATE_CLKCMU_HSI0_DPGTC, 21,
 	     CLK_IGNORE_UNUSED, 0),
