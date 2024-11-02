@@ -1364,7 +1364,11 @@ static int exynos5_usbdrd_phy_clk_handle(struct exynos5_usbdrd_phy *phy_drd)
 				     "failed to find phy reference clock\n");
 
 	ref_rate = clk_get_rate(ref_clk);
-	phy_drd->extrefclk = EXYNOS5_FSEL_26MHZ;
+	ret = exynos5_rate_to_clk(ref_rate, &phy_drd->extrefclk);
+	if (ret)
+		return dev_err_probe(phy_drd->dev, ret,
+				     "clock rate (%ld) not supported\n",
+				     ref_rate);
 
 	return 0;
 }

@@ -211,7 +211,7 @@ static int exynosauto_ufs_drv_init(struct device *dev, struct exynos_ufs *ufs)
 	if (ufs->sysreg) {
 		return regmap_update_bits(ufs->sysreg,
 					  ufs->shareability_reg_offset,
-					  UFS_SHARABLE, UFS_SHARABLE);
+					  ((1 << 22) | (1<<23)), ((1 << 22) | (1<<23)));
 	}
 
 	attr->tx_dif_p_nsec = 3200000;
@@ -735,6 +735,8 @@ static void exynos_ufs_config_smu(struct exynos_ufs *ufs)
 	ufsp_writel(ufs, 0xf1, UFSPSCTRL0);
 
 	exynos_ufs_auto_ctrl_hcc_restore(ufs, &val);
+
+	return;
 }
 
 static void exynos_ufs_config_sync_pattern_mask(struct exynos_ufs *ufs,
@@ -936,6 +938,7 @@ static void exynos_ufs_config_unipro(struct exynos_ufs *ufs)
 	struct exynos_ufs_uic_attr *attr = ufs->drv_data->uic_attr;
 	struct ufs_hba *hba = ufs->hba;
 
+	return;
 	if (attr->pa_dbg_clk_period_off)
 		ufshcd_dme_set(hba, UIC_ARG_MIB(attr->pa_dbg_clk_period_off),
 			       DIV_ROUND_UP(NSEC_PER_SEC, ufs->mclk_rate));
@@ -1994,22 +1997,6 @@ static struct exynos_ufs_uic_attr exynos7_uic_attr = {
 	.pa_dbg_opt_suite1_off		= PA_DBG_OPTION_SUITE,
 };
 
-static const struct exynos_ufs_drv_data exynosauto_ufs_drvs = {
-	.uic_attr		= &exynos7_uic_attr,
-	.quirks			= UFSHCD_QUIRK_PRDT_BYTE_GRAN |
-				  UFSHCI_QUIRK_SKIP_RESET_INTR_AGGR |
-				  UFSHCD_QUIRK_BROKEN_OCS_FATAL_ERROR |
-				  UFSHCD_QUIRK_SKIP_DEF_UNIPRO_TIMEOUT_SETTING,
-	.opts			= EXYNOS_UFS_OPT_BROKEN_AUTO_CLK_CTRL |
-				  EXYNOS_UFS_OPT_SKIP_CONFIG_PHY_ATTR |
-				  EXYNOS_UFS_OPT_BROKEN_RX_SEL_IDX,
-	.drv_init		= exynosauto_ufs_drv_init,
-	.post_hce_enable	= exynosauto_ufs_post_hce_enable,
-	.pre_link		= exynosauto_ufs_pre_link,
-	.pre_pwr_change		= exynosauto_ufs_pre_pwr_change,
-	.post_pwr_change	= exynosauto_ufs_post_pwr_change,
-};
-
 static const struct exynos_ufs_drv_data exynosauto_ufs_vh_drvs = {
 	.vops			= &ufs_hba_exynosauto_vh_ops,
 	.quirks			= UFSHCD_QUIRK_PRDT_BYTE_GRAN |
@@ -2096,6 +2083,24 @@ static struct exynos_ufs_uic_attr fsd_uic_attr = {
 	.pa_dbg_clk_period_off		= PA_DBG_CLK_PERIOD,
 	.pa_dbg_opt_suite1_val		= 0x2E820183,
 	.pa_dbg_opt_suite1_off		= PA_DBG_OPTION_SUITE,
+};
+
+static const struct exynos_ufs_drv_data exynosauto_ufs_drvs = {
+	.uic_attr		= &fsd_uic_attr,
+	.quirks			= UFSHCD_QUIRK_PRDT_BYTE_GRAN |
+				  UFSHCI_QUIRK_SKIP_RESET_INTR_AGGR |
+				  UFSHCI_QUIRK_BROKEN_REQ_LIST_CLR |
+				  UFSHCD_QUIRK_BROKEN_OCS_FATAL_ERROR |
+				  UFSHCI_QUIRK_SKIP_MANUAL_WB_FLUSH_CTRL |
+				  UFSHCD_QUIRK_SKIP_DEF_UNIPRO_TIMEOUT_SETTING,
+	.opts			= EXYNOS_UFS_OPT_BROKEN_AUTO_CLK_CTRL |
+				  EXYNOS_UFS_OPT_SKIP_CONFIG_PHY_ATTR |
+				  EXYNOS_UFS_OPT_UFSPR_SECURE |
+				  EXYNOS_UFS_OPT_TIMER_TICK_SELECT,
+	.drv_init		= exynosauto_ufs_drv_init,
+	.pre_link		= gs101_ufs_pre_link,
+	.post_link		= gs101_ufs_post_link,
+	.pre_pwr_change		= gs101_ufs_pre_pwr_change,
 };
 
 static const struct exynos_ufs_drv_data fsd_ufs_drvs = {
