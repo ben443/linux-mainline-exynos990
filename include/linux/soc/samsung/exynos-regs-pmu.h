@@ -663,4 +663,7 @@
 #define GS101_PHY_CTRL_USB20					(0x3EB0)
 #define GS101_PHY_CTRL_USBDP					(0x3EB4)
 
+/* For Exynos990 */
+#define EXYNOS990_PHY_CTRL_USB20			(0x72c)
+
 #endif /* __LINUX_SOC_EXYNOS_REGS_PMU_H */
