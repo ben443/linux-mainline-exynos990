@@ -2114,22 +2114,22 @@ static const struct exynos_ufs_drv_data fsd_ufs_drvs = {
 	.pre_pwr_change         = fsd_ufs_pre_pwr_change,
 };
 
-static const struct exynos_ufs_drv_data gs101_ufs_drvs = {
-	.uic_attr		= &gs101_uic_attr,
+static struct exynos_ufs_drv_data gs101_ufs_drvs = {
+	.uic_attr		= &exynos7_uic_attr,
 	.quirks			= UFSHCD_QUIRK_PRDT_BYTE_GRAN |
 				  UFSHCI_QUIRK_SKIP_RESET_INTR_AGGR |
 				  UFSHCI_QUIRK_BROKEN_REQ_LIST_CLR |
 				  UFSHCD_QUIRK_BROKEN_OCS_FATAL_ERROR |
-				  UFSHCI_QUIRK_SKIP_MANUAL_WB_FLUSH_CTRL |
 				  UFSHCD_QUIRK_SKIP_DEF_UNIPRO_TIMEOUT_SETTING,
 	.opts			= EXYNOS_UFS_OPT_BROKEN_AUTO_CLK_CTRL |
 				  EXYNOS_UFS_OPT_SKIP_CONFIG_PHY_ATTR |
 				  EXYNOS_UFS_OPT_UFSPR_SECURE |
-				  EXYNOS_UFS_OPT_TIMER_TICK_SELECT,
+				  EXYNOS_UFS_OPT_BROKEN_RX_SEL_IDX,
 	.drv_init		= exynosauto_ufs_drv_init,
-	.pre_link		= gs101_ufs_pre_link,
-	.post_link		= gs101_ufs_post_link,
-	.pre_pwr_change		= gs101_ufs_pre_pwr_change,
+	//.post_hce_enable	= exynosauto_ufs_post_hce_enable,
+	//.pre_link		= exynosauto_ufs_pre_link,
+	//.pre_pwr_change		= exynosauto_ufs_pre_pwr_change,
+	//.post_pwr_change	= exynosauto_ufs_post_pwr_change,
 };
 
 static const struct of_device_id exynos_ufs_of_match[] = {

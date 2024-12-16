@@ -117,7 +117,7 @@ examples:
     #include <dt-bindings/power/rk3588-power.h>
 
     gpu: gpu@fb000000 {
-        compatible = "rockchip,rk3588-mali", "arm,mali-valhall-csf";
+        compatible = "rockchip,rk3588-mali", "-csf";
         reg = <0xfb000000 0x200000>;
         interrupts = <GIC_SPI 92 IRQ_TYPE_LEVEL_HIGH 0>,
                      <GIC_SPI 93 IRQ_TYPE_LEVEL_HIGH 0>,

@@ -167,6 +167,18 @@
 		clock-frequency = <26000000>;
 	};
 
+	cgpu: clock-gpu {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <26000000>;
+	};
+
+	cbus: clock-bus {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <94250000>;
+	};
+
 	soc: soc@0 {
 		compatible = "simple-bus";
 		ranges = <0x0 0x0 0x0 0x20000000>;
@@ -355,6 +367,18 @@
 			#phy-cells = <0>;
 			clocks = <&oscclk>;
 			clock-names = "ref_clk";
+			status = "okay";
+		};
+
+		gpu: gpu@fb000000 {
+			compatible = "arm,mali-valhall-jm";
+			reg = <0x18500000 0x5000>;
+			clocks = <&cgpu>, <&cbus>;
+			clock-names = "core", "bus";
+			interrupts = <GIC_SPI 301 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 302 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 300 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "job", "mmu", "gpu";
 			status = "okay";
 		};
 	};
