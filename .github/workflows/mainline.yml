@@ -1,0 +1,67 @@
+name: Build Mainline Linux Kernel for Exynos990-z3s
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Kernel Source
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential bc flex bison libssl-dev \
+          libelf-dev dwarves lz4 gcc-aarch64-linux-gnu curl
+
+    - name: Download and Apply Mainline Patches (Optional)
+      run: |
+        mkdir -p patches
+        # Only download patches if they don't already exist (allow manual patches)
+        if [ ! -f patches/patch-1.patch ]; then
+          for i in {1..6}; do
+            curl -fsSL "https://lore.kernel.org/linux-samsung-soc/20241015210205.963931-$i-igor.belwon@mentallysanemainliners.org/raw" \
+              -o "patches/patch-$i.patch"
+          done
+        fi
+        # Apply all patches, ignore failures (some may already be applied)
+        for patch in patches/*.patch; do
+          patch -p1 < "$patch" || echo "Patch $patch may have failed or already applied; continuing..."
+        done
+
+    - name: Configure Kernel for Exynos990-z3s
+      run: |
+        export ARCH=arm64
+        export CROSS_COMPILE=aarch64-linux-gnu-
+        make exynos990-z3s_defconfig
+
+    - name: Build Kernel, DTBs, and Modules
+      run: |
+        export ARCH=arm64
+        export CROSS_COMPILE=aarch64-linux-gnu-
+        make -j$(nproc) Image dtbs modules
+
+    - name: Install Modules to Directory
+      run: |
+        export ARCH=arm64
+        export CROSS_COMPILE=aarch64-linux-gnu-
+        make modules_install INSTALL_MOD_PATH=$PWD/modules
+
+    - name: Collect Artifacts
+      run: |
+        mkdir -p artifacts/dtb artifacts/modules
+        cp arch/arm64/boot/Image artifacts/
+        find arch/arm64/boot/dts/ -name '*.dtb' -exec cp {} artifacts/dtb/ \;
+        cp -r modules/lib/modules/* artifacts/modules/
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: exynos990-z3s-mainline-build
+        path: artifacts/
