@@ -39,7 +39,7 @@ jobs:
       run: |
         export ARCH=arm64
         export CROSS_COMPILE=aarch64-linux-gnu-
-        make exynos990-z3s_defconfig
+        make exynos990_defconfig
 
     - name: Build Kernel, DTBs, and Modules
       run: |
