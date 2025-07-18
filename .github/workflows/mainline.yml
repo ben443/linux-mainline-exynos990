@@ -6,62 +6,40 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout Kernel Source
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-    - name: Install Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential bc flex bison libssl-dev \
-          libelf-dev dwarves lz4 gcc-aarch64-linux-gnu curl
+      - name: Set up build dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential bc flex bison libssl-dev
 
-    - name: Download and Apply Mainline Patches (Optional)
-      run: |
-        mkdir -p patches
-        # Only download patches if they don't already exist (allow manual patches)
-        if [ ! -f patches/patch-1.patch ]; then
-          for i in {1..6}; do
-            curl -fsSL "https://lore.kernel.org/linux-samsung-soc/20241015210205.963931-$i-igor.belwon@mentallysanemainliners.org/raw" \
-              -o "patches/patch-$i.patch"
-          done
-        fi
-        # Apply all patches, ignore failures (some may already be applied)
-        for patch in patches/*.patch; do
-          patch -p1 < "$patch" || echo "Patch $patch may have failed or already applied; continuing..."
-        done
+      - name: Build kernel, dtbs, and modules
+        run: |
+          make exynos990_defconfig
+          make -j$(nproc) Image dtbs modules
 
-    - name: Configure Kernel for Exynos990-z3s
-      run: |
-        export ARCH=arm64
-        export CROSS_COMPILE=aarch64-linux-gnu-
-        make exynos990_defconfig
+      - name: Install modules to modules/lib/
+        run: |
+          mkdir -p modules/lib/
+          make modules_install INSTALL_MOD_PATH=modules
+          # Move modules to modules/lib/ if needed
+          if [ -d "modules/lib/modules" ]; then
+            mv modules/lib/modules/* modules/lib/
+            rm -rf modules/lib/modules
+          fi
 
-    - name: Build Kernel, DTBs, and Modules
-      run: |
-        export ARCH=arm64
-        export CROSS_COMPILE=aarch64-linux-gnu-
-        make -j$(nproc) Image dtbs modules
+      - name: Prepare artifacts
+        run: |
+          mkdir -p artifacts
+          cp arch/arm64/boot/Image artifacts/
+          cp arch/arm64/boot/dts/exynos/*.dtb artifacts/
+          cp -r modules/lib/ artifacts/modules/
 
-    - name: Install Modules to Directory
-      run: |
-        export ARCH=arm64
-        export CROSS_COMPILE=aarch64-linux-gnu-
-        make modules_install INSTALL_MOD_PATH=$PWD/modules
-
-    - name: Collect Artifacts
-      run: |
-        mkdir -p artifacts/dtb artifacts/modules
-        cp arch/arm64/boot/Image artifacts/
-        find arch/arm64/boot/dts/ -name '*.dtb' -exec cp {} artifacts/dtb/ \;
-        cp -r modules/lib/modules/* artifacts/modules/
-
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: exynos990-z3s-mainline-build
-        path: artifacts/
+      - name: Upload kernel, dtbs, and modules
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-build
+          path: |
+            artifacts/Image
+            artifacts/*.dtb
+            artifacts/modules/
