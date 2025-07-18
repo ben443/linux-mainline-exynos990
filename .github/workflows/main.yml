@@ -22,47 +22,26 @@ jobs:
         export CROSS_COMPILE=aarch64-linux-gnu-
         make exynos990_defconfig
         make ARCH=arm64 -j$(nproc)
-        sudo mkdir modules
-        sudo mkdir modules/lib
-        MODULES_INSTALL=modules
-        sudo make modules_install
 
-     - name: Install modules to modules/lib/
-         run: |
-          mkdir -p modules/lib/
-          make modules_install INSTALL_MOD_PATH=modules
-          # Move modules to modules/lib/ if needed
-          if [ -d "modules/lib/modules" ]; then
-            mv modules/lib/modules/* modules/lib/
-          fi
-
-        - name: Prepare artifacts
-          run: |
-          mkdir -p artifacts
-          cp arch/arm64/boot/Image artifacts/
-          cp arch/arm64/boot/dts/exynos/*.dtb artifacts/
-          cp -r modules/lib/ artifacts/modules/
-
-      - name: Upload kernel, dtbs, and modules
-        uses: actions/upload-artifact@v4
-        with:
-          name: kernel-build
-          path: |
-            artifacts/Image
-            artifacts/*.dtb
-            artifacts/modules/
-
-    - name: Create Artifact Directory
-      run: mkdir -p artifacts
-
-    - name: Copy Artifacts
+    - name: Install modules
       run: |
-        cp arch/arm64/boot/Image artifacts/
-        find arch/arm64/boot/dts -name '*.dtb' -exec cp {} artifacts/ \;
-        find . -name '*.ko' -exec cp --parents {} artifacts/ \;
+        export ARCH=arm64
+        export CROSS_COMPILE=aarch64-linux-gnu-
+        make modules
+        make modules_install INSTALL_MOD_PATH=$GITHUB_WORKSPACE/modules
 
-    - name: Upload Artifact
+    - name: Prepare artifacts
+      run: |
+        mkdir -p artifacts
+        cp arch/arm64/boot/Image artifacts/
+        cp arch/arm64/boot/dts/exynos/*.dtb artifacts/ || true
+        cp -r modules/lib/modules artifacts/modules || true
+
+    - name: Upload kernel image, dtbs, and modules
       uses: actions/upload-artifact@v4
       with:
-        name: build-artifacts
-        path: artifacts/*
+        name: kernel-artifacts
+        path: |
+          artifacts/Image
+          artifacts/*.dtb
+          artifacts/modules/
