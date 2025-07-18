@@ -15,7 +15,7 @@ jobs:
 
       - name: Build kernel, dtbs, and modules
         run: |
-          make exynos990_defconfig
+          make ARCH=arm64 exynos990_defconfig
           make -j$(nproc) Image dtbs modules
 
       - name: Install modules to modules/lib/
