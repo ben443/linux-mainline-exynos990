@@ -16,12 +16,12 @@ jobs:
       - name: Build kernel, dtbs, and modules
         run: |
           make ARCH=arm64 exynos990_defconfig
-          make -j$(nproc) all
+          make ARCH=arm64 -j$(nproc)
 
       - name: Install modules to modules/lib/
         run: |
           mkdir -p modules/lib/
-          make modules_install INSTALL_MOD_PATH=modules
+          make ARCH=arm64 modules_install INSTALL_MOD_PATH=modules
           # Move modules to modules/lib/ if needed
           if [ -d "modules/lib/modules" ]; then
             mv modules/lib/modules/* modules/lib/
