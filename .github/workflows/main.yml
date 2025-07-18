@@ -27,6 +27,31 @@ jobs:
         MODULES_INSTALL=modules
         sudo make modules_install
 
+     - name: Install modules to modules/lib/
+         run: |
+          mkdir -p modules/lib/
+          make modules_install INSTALL_MOD_PATH=modules
+          # Move modules to modules/lib/ if needed
+          if [ -d "modules/lib/modules" ]; then
+            mv modules/lib/modules/* modules/lib/
+          fi
+
+        - name: Prepare artifacts
+          run: |
+          mkdir -p artifacts
+          cp arch/arm64/boot/Image artifacts/
+          cp arch/arm64/boot/dts/exynos/*.dtb artifacts/
+          cp -r modules/lib/ artifacts/modules/
+
+      - name: Upload kernel, dtbs, and modules
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-build
+          path: |
+            artifacts/Image
+            artifacts/*.dtb
+            artifacts/modules/
+
     - name: Create Artifact Directory
       run: mkdir -p artifacts
 
