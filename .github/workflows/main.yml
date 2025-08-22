@@ -20,7 +20,7 @@ jobs:
       run: |
         export ARCH=arm64
         export CROSS_COMPILE=aarch64-linux-gnu-
-        make exynos990_defconfig
+        make samsung-z3s-pmos_defconfig
         make ARCH=arm64 -j$(nproc)
 
     - name: Install modules
