@@ -15,33 +15,24 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential libncurses5-dev autoconf bison flex libssl-dev libelf-dev gcc-aarch64-linux-gnu
-
     - name: Build Kernel
       run: |
         export ARCH=arm64
         export CROSS_COMPILE=aarch64-linux-gnu-
         make samsung-z3s-pmos_defconfig
         make ARCH=arm64 -j$(nproc)
+        #make modules_install
+    
+    - name: Create Artifact Directory
+      run: mkdir -p artifacts
 
-    - name: Install modules
+    - name: Copy Artifacts
       run: |
-        export ARCH=arm64
-        export CROSS_COMPILE=aarch64-linux-gnu-
-        make modules
-        make modules_install INSTALL_MOD_PATH=$GITHUB_WORKSPACE/modules
-
-    - name: Prepare artifacts
-      run: |
-        mkdir -p artifacts
         cp arch/arm64/boot/Image artifacts/
-        cp arch/arm64/boot/dts/exynos/*.dtb artifacts/ || true
-        cp -r modules/lib/modules artifacts/modules || true
-
-    - name: Upload kernel image, dtbs, and modules
+        find arch/arm64/boot/dts -name '*.dtb' -exec cp {} artifacts/ \;
+        find . -name '*.ko' -exec cp --parents {} artifacts/ \;
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: kernel-artifacts
-        path: |
-          artifacts/Image
-          artifacts/*.dtb
-          artifacts/modules/
+        name: build-artifacts
+        path: artifacts/*
